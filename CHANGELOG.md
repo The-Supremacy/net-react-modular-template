@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/oxface/dotnet-modular-react-template/compare/dotnet-modular-react-template-v1.2.0...dotnet-modular-react-template-v1.2.1) (2026-06-23)
+
+
+### Bug Fixes
+
+* update to bondstone 1.3 ([f6d9a04](https://github.com/oxface/dotnet-modular-react-template/commit/f6d9a0400736d465f49cc3cb239de00abcb6ca49))
+
 ## [1.2.0](https://github.com/oxface/dotnet-modular-react-template/compare/dotnet-modular-react-template-v1.1.0...dotnet-modular-react-template-v1.2.0) (2026-06-03)
 
 

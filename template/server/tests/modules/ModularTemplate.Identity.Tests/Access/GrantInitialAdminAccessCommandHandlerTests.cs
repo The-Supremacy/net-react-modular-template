@@ -11,7 +11,7 @@ public sealed class GrantInitialAdminAccessCommandHandlerTests
     public async Task Handle_WhenConfigurationIsComplete_CreatesActiveApplicationAccess()
     {
         var identity = new InMemoryIdentityContext();
-        var handler = new GrantInitialAdminAccessCommandHandler(identity, identity);
+        var handler = new GrantInitialAdminAccessCommandHandler(identity, identity, identity);
 
         GrantInitialAdminAccessResult result = await handler.HandleAsync(
             new GrantInitialAdminAccessCommand("oidc", "subject-1", Force: false),
@@ -32,7 +32,7 @@ public sealed class GrantInitialAdminAccessCommandHandlerTests
     public async Task Handle_WhenRunRepeatedly_IsIdempotent()
     {
         var identity = new InMemoryIdentityContext();
-        var handler = new GrantInitialAdminAccessCommandHandler(identity, identity);
+        var handler = new GrantInitialAdminAccessCommandHandler(identity, identity, identity);
 
         await handler.HandleAsync(
             new GrantInitialAdminAccessCommand("oidc", "subject-1", Force: false),
@@ -50,7 +50,7 @@ public sealed class GrantInitialAdminAccessCommandHandlerTests
     public async Task Handle_WhenAccessWasRevoked_DoesNotReactivateWithoutForce()
     {
         var identity = new InMemoryIdentityContext();
-        var handler = new GrantInitialAdminAccessCommandHandler(identity, identity);
+        var handler = new GrantInitialAdminAccessCommandHandler(identity, identity, identity);
         await handler.HandleAsync(
             new GrantInitialAdminAccessCommand("oidc", "subject-1", Force: false),
             CancellationToken.None);
@@ -69,7 +69,7 @@ public sealed class GrantInitialAdminAccessCommandHandlerTests
     public async Task Handle_WhenAccessWasRevokedAndForceIsSet_ReactivatesAccess()
     {
         var identity = new InMemoryIdentityContext();
-        var handler = new GrantInitialAdminAccessCommandHandler(identity, identity);
+        var handler = new GrantInitialAdminAccessCommandHandler(identity, identity, identity);
         await handler.HandleAsync(
             new GrantInitialAdminAccessCommand("oidc", "subject-1", Force: false),
             CancellationToken.None);

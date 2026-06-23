@@ -1,12 +1,9 @@
-using Bondstone.Domain;
+using Bondstone.DomainEvents;
 using ModularTemplate.SharedKernel.Domain;
 
 namespace ModularTemplate.Identity.Access.Events;
 
-[DomainEventType(
-    "identity.application-access",
-    "identity.application-access-revoked",
-    1)]
+[DomainEventIdentity("identity.application-access-revoked")]
 public sealed record ApplicationAccessRevokedDomainEvent(
     Guid ApplicationAccessId,
     Guid LocalUserId) : DomainEvent;

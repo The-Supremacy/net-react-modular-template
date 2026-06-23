@@ -13,7 +13,7 @@ public sealed class CurrentUserProviderTests
     public async Task GetCurrentUserAsync_WhenIdentityIsNew_CreatesLocalUserWithNoDefaultAccess()
     {
         var identityContext = new InMemoryIdentityContext();
-        var handler = new SynchronizeCurrentUserCommandHandler(identityContext, identityContext);
+        var handler = new SynchronizeCurrentUserCommandHandler(identityContext, identityContext, identityContext);
 
         CurrentUserContext currentUser = await handler.HandleAsync(
             new SynchronizeCurrentUserCommand(new AuthenticatedIdentity("oidc", "subject-1", "Ada", "ada@example.test")),
@@ -31,7 +31,7 @@ public sealed class CurrentUserProviderTests
     public async Task GetCurrentUserAsync_WhenApplicationAccessIsActive_ReturnsAccessState()
     {
         var identityContext = new InMemoryIdentityContext();
-        var handler = new SynchronizeCurrentUserCommandHandler(identityContext, identityContext);
+        var handler = new SynchronizeCurrentUserCommandHandler(identityContext, identityContext, identityContext);
         var identity = new AuthenticatedIdentity("oidc", "subject-1", "Ada", "ada@example.test");
         CurrentUserContext created = await handler.HandleAsync(
             new SynchronizeCurrentUserCommand(identity),
@@ -51,7 +51,7 @@ public sealed class CurrentUserProviderTests
     public async Task GetCurrentUserAsync_WhenIdentityIsMissing_ReturnsUnauthenticated()
     {
         var identityContext = new InMemoryIdentityContext();
-        var handler = new SynchronizeCurrentUserCommandHandler(identityContext, identityContext);
+        var handler = new SynchronizeCurrentUserCommandHandler(identityContext, identityContext, identityContext);
 
         CurrentUserContext currentUser = await handler.HandleAsync(
             new SynchronizeCurrentUserCommand(null),

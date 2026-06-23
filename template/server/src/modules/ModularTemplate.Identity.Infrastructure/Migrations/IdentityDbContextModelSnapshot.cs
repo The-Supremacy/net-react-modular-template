@@ -18,10 +18,420 @@ namespace ModularTemplate.Identity.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("identity")
-                .HasAnnotation("ProductVersion", "10.0.7")
+                .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Bondstone.Persistence.EntityFrameworkCore.DomainEvents.DomainEventRecordEntity", b =>
+                {
+                    b.Property<Guid>("DomainEventId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("DomainEventId");
+
+                    b.Property<DateTimeOffset>("CapturedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CapturedAtUtc");
+
+                    b.Property<Guid?>("CausationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CausationId");
+
+                    b.Property<string>("DomainEventName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("DomainEventName");
+
+                    b.Property<string>("ModuleName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("ModuleName");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("OccurredAtUtc");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("Payload");
+
+                    b.Property<string>("PayloadMetadata")
+                        .HasColumnType("text")
+                        .HasColumnName("PayloadMetadata");
+
+                    b.Property<string>("PayloadTypeName")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)")
+                        .HasColumnName("PayloadTypeName");
+
+                    b.Property<string>("TraceBaggage")
+                        .HasColumnType("text")
+                        .HasColumnName("TraceBaggage");
+
+                    b.Property<string>("TraceParent")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("TraceParent");
+
+                    b.Property<string>("TraceState")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("TraceState");
+
+                    b.HasKey("DomainEventId")
+                        .HasName("PK_domain_event_records");
+
+                    b.HasIndex("ModuleName", "CapturedAtUtc");
+
+                    b.HasIndex("ModuleName", "DomainEventName");
+
+                    b.ToTable("domain_event_records", "identity");
+                });
+
+            modelBuilder.Entity("Bondstone.Persistence.EntityFrameworkCore.Inbox.InboxMessageEntity", b =>
+                {
+                    b.Property<string>("ModuleName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("ModuleName");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("MessageId");
+
+                    b.Property<string>("HandlerIdentity")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("HandlerIdentity");
+
+                    b.Property<DateTimeOffset?>("ProcessedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ProcessedAtUtc");
+
+                    b.Property<DateTimeOffset>("ReceivedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ReceivedAtUtc");
+
+                    b.HasKey("ModuleName", "MessageId", "HandlerIdentity")
+                        .HasName("PK_inbox_messages");
+
+                    b.HasIndex("ReceivedAtUtc");
+
+                    b.ToTable("inbox_messages", "identity");
+                });
+
+            modelBuilder.Entity("Bondstone.Persistence.EntityFrameworkCore.IncomingInbox.IncomingInboxMessageEntity", b =>
+                {
+                    b.Property<string>("ReceiverModule")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("ReceiverModule");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("MessageId");
+
+                    b.Property<string>("HandlerIdentity")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("HandlerIdentity");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("AttemptCount");
+
+                    b.Property<Guid?>("CausationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CausationId");
+
+                    b.Property<string>("ClaimedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("ClaimedBy");
+
+                    b.Property<DateTimeOffset?>("ClaimedUntilUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ClaimedUntilUtc");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CreatedAtUtc");
+
+                    b.Property<Guid?>("DurableOperationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("DurableOperationId");
+
+                    b.Property<DateTimeOffset?>("FailedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("FailedAtUtc");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("FailureReason");
+
+                    b.Property<DateTimeOffset>("IngestedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("IngestedAtUtc");
+
+                    b.Property<string>("MessageKind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("MessageKind");
+
+                    b.Property<string>("MessageTypeName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("MessageTypeName");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("text")
+                        .HasColumnName("Metadata");
+
+                    b.Property<DateTimeOffset?>("NextAttemptAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("NextAttemptAtUtc");
+
+                    b.Property<string>("PartitionKey")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("PartitionKey");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("Payload");
+
+                    b.Property<DateTimeOffset?>("ProcessedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ProcessedAtUtc");
+
+                    b.Property<string>("SourceModule")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("SourceModule");
+
+                    b.Property<string>("SourceTransportName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("SourceTransportName");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("Status");
+
+                    b.Property<string>("TargetModule")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("TargetModule");
+
+                    b.Property<string>("TraceBaggage")
+                        .HasColumnType("text")
+                        .HasColumnName("TraceBaggage");
+
+                    b.Property<string>("TraceParent")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("TraceParent");
+
+                    b.Property<string>("TraceState")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("TraceState");
+
+                    b.HasKey("ReceiverModule", "MessageId", "HandlerIdentity")
+                        .HasName("PK_incoming_inbox_messages");
+
+                    b.HasIndex("DurableOperationId");
+
+                    b.HasIndex("MessageTypeName");
+
+                    b.HasIndex("SourceTransportName");
+
+                    b.HasIndex("Status", "ClaimedUntilUtc");
+
+                    b.HasIndex("Status", "NextAttemptAtUtc", "IngestedAtUtc");
+
+                    b.HasIndex("ReceiverModule", "Status", "NextAttemptAtUtc", "IngestedAtUtc");
+
+                    b.ToTable("incoming_inbox_messages", "identity");
+                });
+
+            modelBuilder.Entity("Bondstone.Persistence.EntityFrameworkCore.Operations.OperationStateEntity", b =>
+                {
+                    b.Property<Guid>("DurableOperationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FailureReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HandlerIdentity")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<string>("MessageTypeName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("ModuleName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("ResultPayload")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("DurableOperationId")
+                        .HasName("PK_operation_states");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("UpdatedAtUtc");
+
+                    b.ToTable("operation_states", "identity");
+                });
+
+            modelBuilder.Entity("Bondstone.Persistence.EntityFrameworkCore.Outbox.OutboxMessageEntity", b =>
+                {
+                    b.Property<Guid>("MessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("MessageId");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("AttemptCount");
+
+                    b.Property<Guid?>("CausationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CausationId");
+
+                    b.Property<string>("ClaimedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("ClaimedBy");
+
+                    b.Property<DateTimeOffset?>("ClaimedUntilUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ClaimedUntilUtc");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CreatedAtUtc");
+
+                    b.Property<DateTimeOffset?>("DispatchedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("DispatchedAtUtc");
+
+                    b.Property<Guid?>("DurableOperationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("DurableOperationId");
+
+                    b.Property<DateTimeOffset?>("FailedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("FailedAtUtc");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("FailureReason");
+
+                    b.Property<string>("MessageKind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("MessageKind");
+
+                    b.Property<string>("MessageTypeName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("MessageTypeName");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("text")
+                        .HasColumnName("Metadata");
+
+                    b.Property<DateTimeOffset?>("NextAttemptAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("NextAttemptAtUtc");
+
+                    b.Property<string>("PartitionKey")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("PartitionKey");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("Payload");
+
+                    b.Property<string>("SourceModule")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("SourceModule");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("Status");
+
+                    b.Property<DateTimeOffset>("StoredAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("StoredAtUtc");
+
+                    b.Property<string>("TargetModule")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("TargetModule");
+
+                    b.Property<string>("TraceBaggage")
+                        .HasColumnType("text")
+                        .HasColumnName("TraceBaggage");
+
+                    b.Property<string>("TraceParent")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("TraceParent");
+
+                    b.Property<string>("TraceState")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("TraceState");
+
+                    b.HasKey("MessageId")
+                        .HasName("PK_outbox_messages");
+
+                    b.HasIndex("DurableOperationId");
+
+                    b.HasIndex("MessageTypeName");
+
+                    b.HasIndex("Status", "ClaimedUntilUtc");
+
+                    b.HasIndex("Status", "NextAttemptAtUtc", "StoredAtUtc");
+
+                    b.ToTable("outbox_messages", "identity");
+                });
 
             modelBuilder.Entity("ModularTemplate.Identity.Access.ApplicationAccess", b =>
                 {
@@ -86,180 +496,6 @@ namespace ModularTemplate.Identity.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("local_users", "identity");
-                });
-
-            modelBuilder.Entity("Bondstone.EntityFrameworkCore.Persistence.DomainEvents.StoredDomainEvent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AggregateId")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<string>("AggregateType")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<int>("EventVersion")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("jsonb");
-
-                    b.Property<DateTimeOffset>("OccurredAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Payload")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventType");
-
-                    b.HasIndex("AggregateType", "AggregateId");
-
-                    b.ToTable("domain_events", "identity");
-                });
-
-            modelBuilder.Entity("Bondstone.EntityFrameworkCore.Inbox.InboxMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("HandlerName")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
-
-                    b.Property<string>("MessageId")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<string>("ModuleName")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<DateTimeOffset?>("ProcessedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("ReceivedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReceivedAtUtc");
-
-                    b.HasIndex("ModuleName", "MessageId", "HandlerName")
-                        .IsUnique();
-
-                    b.ToTable("inbox_messages", "identity");
-                });
-
-            modelBuilder.Entity("Bondstone.EntityFrameworkCore.Outbox.OutboxMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("AttemptCount")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("CausationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CorrelationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("DispatchedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Error")
-                        .HasMaxLength(2048)
-                        .HasColumnType("character varying(2048)");
-
-                    b.Property<DateTimeOffset?>("FailedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("LockedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("LockedBy")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<int>("MaxAttempts")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("MessageId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("MessageKind")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("MessageType")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("jsonb");
-
-                    b.Property<DateTimeOffset>("NextAttemptAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("DurableOperationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("PartitionKey")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
-
-                    b.Property<string>("Payload")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("SourceModule")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("TargetModule")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MessageId")
-                        .IsUnique();
-
-                    b.HasIndex("MessageType");
-
-                    b.HasIndex("Status", "NextAttemptAtUtc", "CreatedAtUtc");
-
-                    b.ToTable("outbox_messages", "identity");
                 });
 #pragma warning restore 612, 618
         }

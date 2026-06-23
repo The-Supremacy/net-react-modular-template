@@ -4,6 +4,7 @@ using ModularTemplate.Identity.Users;
 namespace ModularTemplate.Identity.Tests.Support;
 
 internal sealed class InMemoryIdentityContext :
+    IIdentityUnitOfWork,
     ILocalUserRepository,
     IApplicationAccessRepository
 {
@@ -13,6 +14,11 @@ internal sealed class InMemoryIdentityContext :
     public IReadOnlyCollection<ApplicationAccess> ApplicationAccess => _applicationAccess.AsReadOnly();
 
     public IReadOnlyCollection<LocalUser> Users => _users.AsReadOnly();
+
+    public Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 
     public Task<LocalUser?> GetByProviderSubjectAsync(
         string provider,

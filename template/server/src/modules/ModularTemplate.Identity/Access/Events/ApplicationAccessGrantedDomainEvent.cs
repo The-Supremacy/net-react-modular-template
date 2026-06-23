@@ -1,12 +1,9 @@
-using Bondstone.Domain;
+using Bondstone.DomainEvents;
 using ModularTemplate.SharedKernel.Domain;
 
 namespace ModularTemplate.Identity.Access.Events;
 
-[DomainEventType(
-    "identity.application-access",
-    "identity.application-access-granted",
-    1)]
+[DomainEventIdentity("identity.application-access-granted")]
 public sealed record ApplicationAccessGrantedDomainEvent(
     Guid ApplicationAccessId,
     Guid LocalUserId) : DomainEvent;

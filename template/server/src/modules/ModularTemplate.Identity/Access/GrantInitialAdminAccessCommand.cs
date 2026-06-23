@@ -1,4 +1,4 @@
-using Bondstone.Commands;
+using ModularTemplate.Identity;
 using ModularTemplate.Identity.Users;
 
 namespace ModularTemplate.Identity.Access;
@@ -15,7 +15,7 @@ public sealed class InitialAdminOptions
 public sealed record GrantInitialAdminAccessCommand(
     string? Provider,
     string? Subject,
-    bool Force) : IModuleCommand<GrantInitialAdminAccessResult>;
+    bool Force);
 
 public enum GrantInitialAdminAccessResult
 {
@@ -26,11 +26,11 @@ public enum GrantInitialAdminAccessResult
 }
 
 public sealed class GrantInitialAdminAccessCommandHandler(
+    IIdentityUnitOfWork unitOfWork,
     ILocalUserRepository localUserRepository,
     IApplicationAccessRepository applicationAccessRepository)
-    : IModuleCommandHandler<GrantInitialAdminAccessCommand, GrantInitialAdminAccessResult>
 {
-    public async ValueTask<GrantInitialAdminAccessResult> HandleAsync(
+    public async Task<GrantInitialAdminAccessResult> HandleAsync(
         GrantInitialAdminAccessCommand command,
         CancellationToken cancellationToken)
     {
@@ -58,6 +58,7 @@ public sealed class GrantInitialAdminAccessCommandHandler(
         if (access is null)
         {
             applicationAccessRepository.Add(ApplicationAccess.GrantTo(user.Id));
+            await unitOfWork.SaveChangesAsync(cancellationToken);
             return GrantInitialAdminAccessResult.Granted;
         }
 
@@ -72,6 +73,7 @@ public sealed class GrantInitialAdminAccessCommandHandler(
         }
 
         access.Grant();
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return GrantInitialAdminAccessResult.Granted;
     }
 }

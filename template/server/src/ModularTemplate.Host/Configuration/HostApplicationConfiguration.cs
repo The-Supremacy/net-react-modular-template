@@ -1,8 +1,6 @@
 using System.Reflection;
 using ModularTemplate.Host.Features.Auth;
 using ModularTemplate.ServiceDefaults;
-using Bondstone.EntityFrameworkCore.Postgres.Persistence;
-using Bondstone.Transport.Rebus;
 
 namespace ModularTemplate.Host.Configuration;
 
@@ -45,13 +43,10 @@ public static class HostApplicationConfiguration
         builder.AddProblemDetails();
         builder.Services.AddOpenApi();
         builder.Services.AddModularTemplateModules();
-        builder.Services.AddModularCommandHandling();
 
         if (mode == HostApplicationMode.Runtime)
         {
-            builder.AddRebusTransport(transport =>
-                transport.UsePostgresInternalTransport(builder.Configuration.GetSection("Messaging:Rebus")));
-            builder.Services.AddModuleOutboxDispatchers();
+            builder.AddBondstoneRuntime();
         }
 
         return builder;

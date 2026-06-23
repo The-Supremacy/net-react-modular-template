@@ -91,7 +91,7 @@ public sealed class InitialAdminSetupTests(PostgreSqlFixture fixture)
 
     [Fact]
     [Trait("Category", "Integration")]
-    public async Task RunAsync_WhenDatabaseIsFresh_MigratesModuleOwnedOutboxTables()
+    public async Task RunAsync_WhenDatabaseIsFresh_MigratesModuleOwnedBondstoneTables()
     {
         using IHost host = CreateHost(configureInitialAdmin: false);
         using var output = new StringWriter();
@@ -109,20 +109,13 @@ public sealed class InitialAdminSetupTests(PostgreSqlFixture fixture)
         await using AsyncServiceScope scope = host.Services.CreateAsyncScope();
         IdentityDbContext identityContext = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
         ProductsDbContext productsContext = scope.ServiceProvider.GetRequiredService<ProductsDbContext>();
-        await AssertSchemaExistsAsync(identityContext, "transport");
-        await AssertTablesExistAsync(
-            identityContext,
-            "transport",
-            [
-                "rebus_subscriptions",
-            ]);
         await AssertTablesExistAsync(
             identityContext,
             "identity",
             [
                 "application_access",
                 "local_users",
-                "domain_events",
+                "domain_event_records",
                 "inbox_messages",
                 "outbox_messages",
                 "__EFMigrationsHistory",
@@ -132,7 +125,7 @@ public sealed class InitialAdminSetupTests(PostgreSqlFixture fixture)
             "products",
             [
                 "products",
-                "domain_events",
+                "domain_event_records",
                 "inbox_messages",
                 "outbox_messages",
                 "__EFMigrationsHistory",
@@ -175,18 +168,4 @@ public sealed class InitialAdminSetupTests(PostgreSqlFixture fixture)
         }
     }
 
-    private static async Task AssertSchemaExistsAsync(DbContext dbContext, string schema)
-    {
-        string? matchingSchema = await dbContext.Database
-            .SqlQueryRaw<string>(
-                """
-                SELECT schema_name AS "Value"
-                FROM information_schema.schemata
-                WHERE schema_name = {0}
-                """,
-                schema)
-            .SingleOrDefaultAsync(CancellationToken.None);
-
-        matchingSchema.ShouldBe(schema);
-    }
 }

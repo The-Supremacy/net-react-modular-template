@@ -2,7 +2,7 @@
   "name": "dotnet-modular-react-template",
   "version": "1.2.0",
   "description": "CLI template factory for bootstrapping a .NET + React modular-monolith product repository.",
-  "private": false,
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oxface/dotnet-modular-react-template.git"
@@ -36,9 +36,6 @@
     "aspire"
   ],
   "license": "Apache-2.0",
-  "publishConfig": {
-    "access": "public"
-  },
   "engines": {
     "node": ">=24.0.0",
     "pnpm": ">=10.33.4 <11"
@@ -56,14 +53,13 @@
     "prepack": "pnpm exec node scripts/clean-template-artifacts.js",
     "prepare": "husky",
     "security:audit": "pnpm audit --audit-level low",
-    "framework:test": "dotnet test tests/ModularTemplate.Framework.Tests/ModularTemplate.Framework.Tests.csproj",
     "scripts:lint": "eslint scripts --max-warnings 0",
     "scripts:test": "pnpm exec node --test scripts/*.test.js",
     "template:bootstrap": "pnpm exec node scripts/bootstrap-template.js",
     "template:verify": "pnpm exec node scripts/verify-bootstrap.js",
     "template:verify:dry-run": "pnpm exec node scripts/bootstrap-template.js --product-name \"Acme Desk\" --output ../acme-desk --dry-run",
     "template:verify:full": "pnpm exec node scripts/verify-bootstrap.js --full",
-    "verify": "pnpm format:check && pnpm scripts:lint && pnpm scripts:test && pnpm framework:test && pnpm template:verify:dry-run && pnpm template:verify"
+    "verify": "pnpm format:check && pnpm scripts:lint && pnpm scripts:test && pnpm template:verify:dry-run && pnpm template:verify"
   },
   "devDependencies": {
     "@commitlint/cli": "21.0.1",

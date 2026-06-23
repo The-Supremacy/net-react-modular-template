@@ -1,12 +1,9 @@
-using Bondstone.Domain;
+using Bondstone.DomainEvents;
 using ModularTemplate.SharedKernel.Domain;
 
 namespace ModularTemplate.Identity.Users.Events;
 
-[DomainEventType(
-    "identity.local-user",
-    "identity.local-user-seen",
-    1)]
+[DomainEventIdentity("identity.local-user-seen")]
 public sealed record LocalUserSeenDomainEvent(
     Guid LocalUserId,
     string Provider,

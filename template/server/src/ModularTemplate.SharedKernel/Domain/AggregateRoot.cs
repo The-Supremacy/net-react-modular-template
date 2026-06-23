@@ -1,8 +1,8 @@
-using Bondstone.Domain;
+using Bondstone.DomainEvents;
 
 namespace ModularTemplate.SharedKernel.Domain;
 
-public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot
+public abstract class AggregateRoot<TId> : Entity<TId>, IDomainEventSource
     where TId : notnull
 {
     private readonly List<IDomainEvent> _domainEvents = [];
@@ -16,19 +16,9 @@ public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot
     {
     }
 
-    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+    public IReadOnlyCollection<IDomainEvent> PendingDomainEvents => _domainEvents.AsReadOnly();
 
-    object IAggregateRoot.Id => Id;
-
-    public IReadOnlyCollection<IDomainEvent> DequeueDomainEvents()
-    {
-        IDomainEvent[] domainEvents = [.. _domainEvents];
-        _domainEvents.Clear();
-
-        return domainEvents;
-    }
-
-    public void ClearDomainEvents()
+    public void ClearPendingDomainEvents()
     {
         _domainEvents.Clear();
     }

@@ -1,9 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Bondstone.Commands;
-using Bondstone.EntityFrameworkCore.Persistence;
 using ModularTemplate.Identity.Access;
-using Bondstone.Transport.Rebus;
 
 namespace ModularTemplate.Migrator;
 
@@ -25,25 +23,30 @@ public static class MigratorRunner
 
         await using AsyncServiceScope scope = services.CreateAsyncScope();
 
-        if (command.MigrationScope is MigratorMigrationScope.All or MigratorMigrationScope.Transport)
-        {
-            RebusPostgresSchemaInitializer rebusSchemaInitializer =
-                scope.ServiceProvider.GetRequiredService<RebusPostgresSchemaInitializer>();
-            await rebusSchemaInitializer.EnsureCreatedAsync(cancellationToken);
-        }
-
         if (command.MigrationScope is MigratorMigrationScope.All or MigratorMigrationScope.Modules)
         {
-            IEntityFrameworkCoreModuleMigrator moduleMigrator =
-                scope.ServiceProvider.GetRequiredService<IEntityFrameworkCoreModuleMigrator>();
-            await moduleMigrator.MigrateAsync(cancellationToken: cancellationToken);
+            await scope.ServiceProvider.GetRequiredService<Identity.Infrastructure.Persistence.IdentityDbContext>()
+                .Database.MigrateAsync(cancellationToken);
+            await scope.ServiceProvider.GetRequiredService<Products.Infrastructure.Persistence.ProductsDbContext>()
+                .Database.MigrateAsync(cancellationToken);
         }
 
         if (command.MigrationScope is MigratorMigrationScope.Module)
         {
-            IEntityFrameworkCoreModuleMigrator moduleMigrator =
-                scope.ServiceProvider.GetRequiredService<IEntityFrameworkCoreModuleMigrator>();
-            await moduleMigrator.MigrateAsync(command.ModuleName, cancellationToken);
+            switch (command.ModuleName)
+            {
+                case "identity":
+                    await scope.ServiceProvider.GetRequiredService<Identity.Infrastructure.Persistence.IdentityDbContext>()
+                        .Database.MigrateAsync(cancellationToken);
+                    break;
+                case "products":
+                    await scope.ServiceProvider.GetRequiredService<Products.Infrastructure.Persistence.ProductsDbContext>()
+                        .Database.MigrateAsync(cancellationToken);
+                    break;
+                default:
+                    await error.WriteLineAsync($"Unknown module '{command.ModuleName}'.");
+                    return 2;
+            }
         }
 
         string? configurationError = null;
@@ -62,10 +65,9 @@ public static class MigratorRunner
             return 0;
         }
 
-        IModuleCommandExecutor<GrantInitialAdminAccessCommand, GrantInitialAdminAccessResult> commandExecutor =
-            scope.ServiceProvider.GetRequiredService<
-                IModuleCommandExecutor<GrantInitialAdminAccessCommand, GrantInitialAdminAccessResult>>();
-        GrantInitialAdminAccessResult result = await commandExecutor.SendAsync(
+        GrantInitialAdminAccessCommandHandler handler =
+            scope.ServiceProvider.GetRequiredService<GrantInitialAdminAccessCommandHandler>();
+        GrantInitialAdminAccessResult result = await handler.HandleAsync(
             new GrantInitialAdminAccessCommand(
                 initialAdmin.Provider,
                 initialAdmin.Subject,

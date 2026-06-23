@@ -15,27 +15,21 @@ Durable direction:
   through provider-neutral contracts, not EF sets or infrastructure types.
 - Each module Infrastructure project owns its EF Core DbContext, schema, and
   baseline `InitialCreate` migration.
-- The Migrator references module Infrastructure projects, bootstraps transport
-  infrastructure when requested, and migrates module DbContexts discovered from
-  module persistence registrations. Product-owned schema changes should add
+- The Migrator references module Infrastructure projects and migrates
+  module-owned DbContexts. Product-owned schema changes should add
   product-owned migrations after bootstrap.
 - SharedKernel contains dependency-light domain primitives, validation
   contracts, and normalization helpers shared across module libraries.
-- Bondstone contains module-boundary abstractions, command handling, messaging
-  contracts, module message registration, and EF Core persistence plumbing. Its
-  PostgreSQL and Rebus integrations are adapters; module Infrastructure
-  projects should register Bondstone concepts instead of taking a direct
-  dependency on a transport adapter unless they own adapter-specific behavior.
-- Domain events and outbox messages are persisted in each module schema by
-  Bondstone.EntityFrameworkCore, with PostgreSQL-specific locking and duplicate
-  detection supplied by Bondstone.EntityFrameworkCore.Postgres.
-- Inbox message records are persisted in each module schema so receive-side
-  handlers can skip duplicate deliveries by message id and stable message
-  identity.
+- Bondstone is consumed as NuGet packages. It owns module-boundary abstractions,
+  command handling, durable messaging contracts, EF Core persistence mappings,
+  PostgreSQL persistence helpers, local transport, hosted outbox dispatch, and
+  receive-side inbox/idempotency behavior.
+- Domain events, inbox rows, operation state, and outbox messages are persisted
+  in each module schema by Bondstone package mappings.
 - ServiceDefaults provides OpenTelemetry, service discovery, default HTTP
   resilience, and development health endpoints.
 - Host configures problem-details responses, baseline exception handling, and
-  transport registration.
+  Bondstone runtime registration.
 - Host composes minimal API authentication, browser auth endpoints,
   current-user HTTP endpoints, and application-access authorization policies
   while modules own local identity and access decisions behind contracts. The
@@ -72,13 +66,11 @@ Host `Program.cs` should stay a composition outline. Module registration should
 be delegated to module-owned configuration extensions, ideally one
 `Add{Module}Module` service extension and one `Map{Module}Module` endpoint
 extension where the module owns endpoints. Those extensions wire module
-services, infrastructure adapters, module persistence, and Bondstone module
-messaging. Host composition wires transport adapters, such as Rebus, around the
-Bondstone registrations; modules should not register transport handlers
-directly. The generated Host uses Rebus/PostgreSQL by default for local
-simplicity, while the Rebus adapter also exposes Azure Service Bus for products
-that want broker-backed transport without changing module contracts or
-Bondstone message handlers.
+services and infrastructure adapters. Host composition adds package-based
+Bondstone modules, PostgreSQL persistence, local transport routes, and the
+hosted durable outbox worker. Modules should not implement transport handlers,
+inbox/outbox entities, dispatchers, locks, retry policies, or durable sender
+infrastructure directly.
 
 ## DDD And CQRS Direction
 
@@ -90,8 +82,8 @@ feature docs and code model its invariants, equality, lifecycle, and ownership
 as a domain concept.
 
 The template's durable direction is CQRS through narrow module contracts and
-Bondstone command handlers where behavior grows beyond a very small module
-service. Repository abstractions represent command-side domain
+module-local application services or Bondstone command handlers where behavior
+grows beyond a very small module service. Repository abstractions represent command-side domain
 persistence for aggregate loading and saving. They sit inside the module
 boundary, and infrastructure implements them through module-owned DbContexts.
 Query contracts and read models provide provider-neutral projections for callers
@@ -100,42 +92,12 @@ a permission to share persistence details or perform cross-module writes. Avoid
 `Reader` services unless a feature artifact intentionally documents why that
 term is clearer than a query contract, read model, or repository.
 
-Modules should use Bondstone command abstractions for write use cases that need
-module unit-of-work behavior. Command handlers mutate aggregates through
-module-owned repositories and rely on the Bondstone command pipeline to run the
-command inside the selected module unit of work and save changes after
-successful command handling. Normal callers should inject
-`IModuleCommandExecutor<TCommand, TResult>` for known command types; the
-runtime-typed `IModuleCommandBus` exists for dynamic edges and compatibility.
-Each command type has exactly one registered command handler.
-Command handlers should not call `DbContext.SaveChanges` directly. Handlers may
-explicitly flush the active module unit of work when they need
-database-generated values, constraint checks, stored-procedure inputs, or other
-mid-transaction persistence effects. Each successful flush stores and clears
-the aggregate domain events captured by that flush; if the enclosing
-transaction later rolls back, the scoped DbContext and tracked aggregates must
-not be reused for retry. A retry starts from a fresh request or
-message-handling scope, and the module unit of work rejects further save or
-transaction attempts after a failed save or transaction. The unit of work uses
-the current .NET `Activity` for trace correlation when one exists; otherwise it
-starts a Bondstone `Activity` for the module transaction.
-Integration-event outbox rows persist the current W3C trace context in outbox
-metadata so later dispatch and receive-side work continue the same distributed
-trace. Module Infrastructure registers persistent command types with
-`AddModulePersistence<{Module}DbContext>()`; modules can discover those command
-types from handler assemblies with
-`ModuleCommandTypes.FromHandlerAssemblyMarkers`. The pipeline uses the
-discovered command types to select one module boundary for the command. Modules
-that do not use Bondstone command handlers can also register persistence with
-`AddModulePersistence` and run arbitrary module work through `IModuleBoundary`.
-Both paths register the shared module DbContext/outbox plumbing used by durable
-messaging. The Host starts durable outbox workers once with
-`AddModuleOutboxDispatchers()` after composing modules; persistence
-registration alone should not start background dispatch, so Migrator and other
-tooling can reuse module persistence without draining queues. Commands that are not mapped to
-module persistence fail unless they are explicitly marked with
-`NonPersistentCommandAttribute`. Query contracts read provider-neutral state and
-do not save changes.
+Result-returning application work should stay as explicit application services
+outside durable messaging. Durable commands are send-and-forget and should be
+observed through state, query contracts, or follow-up events. Module
+Infrastructure owns explicit unit-of-work adapters when product application
+services need to save module state outside a Bondstone command pipeline. Query
+contracts read provider-neutral state and do not save changes.
 
 Command handlers should get decision-making data through repositories or
 command-side read ports, not by calling external query contracts. Query
@@ -150,17 +112,12 @@ Durable commands are send-and-forget: callers may receive an acceptance record
 and durable operation id, but handler results are observed later through query
 contracts, operation status, read models, or follow-up integration events.
 Module code should send durable commands through `IDurableCommandSender` from
-inside the source module's command unit of work so the source module outbox row
-is committed consistently with module state.
-Receive-side transport handlers should be adapters that delegate state changes
-to target-module application behavior. Because transport delivery starts outside
-the Bondstone command pipeline, the module-scoped transport adapter owns the
-receiving module transaction; receiving module command calls participate inside
-that transaction when they are used. Cross-module write follow-up from a receive
-handler must use another durable command or integration event, not a synchronous
-command for another module.
+source-module application code running inside a Bondstone module pipeline so the
+source module outbox row is staged through Bondstone. Cross-module write
+follow-up from a receive handler must use another durable command or integration
+event, not a synchronous write into another module.
 See [Intermodule Communication](intermodule-communication.md) for the detailed
-pattern guide, message lifecycle, ordering, retention, and module scaffolding
+pattern guide, message lifecycle, persistence, and module scaffolding
 checklist.
 Host-level orchestration is reserved for API/user workflows that compose module
 contracts without owning durable state changes. Durable commands still need a
@@ -176,18 +133,14 @@ Aggregates own domain transitions and raise domain events for relevant actions.
 Child entities owned by an aggregate root should keep constructors, factories,
 and mutators private or internal to the aggregate unless the model documents a
 reason for independent lifecycle control. Domain event classes declare stable
-aggregate type, event type, and version metadata with explicit attributes so
-persisted event rows do not depend on CLR type names.
+identities with `DomainEventIdentityAttribute` so persisted event rows do not
+depend on CLR type names.
 
-Surface validation may use pipeline behaviors and colocated validators for
-request shape, authorization preconditions, and cross-field input rules. Domain
+Surface validation may use colocated validators for request shape,
+authorization preconditions, and cross-field input rules. Domain
 invariants remain inside aggregates, child entities, and value objects so they
 hold regardless of which command, endpoint, test, or background process invokes
-the model. Command validators implement the shared request-validator contract
-and are executed by the request-validation pipeline before command transaction
-handling opens a transaction. Bondstone command diagnostics run as a pipeline
-behavior so command timing and failures are captured consistently around
-validation, transaction handling, and the command handler.
+the model.
 
 Reusable normalization helpers should live in shared kernel, module shared
 code, or a clearly named feature helper when multiple handlers/entities need

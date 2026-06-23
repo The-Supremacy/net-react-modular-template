@@ -45,8 +45,8 @@ Run focused bootstrap verification:
 pnpm verify
 ```
 
-`pnpm verify` also runs `pnpm framework:test`, which covers template-framework
-behavior that should not be copied as generated-product test examples.
+`pnpm verify` runs factory script checks plus focused generated-product
+bootstrap verification.
 
 Run full generated-repository verification:
 

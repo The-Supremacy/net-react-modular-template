@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using ModularTemplate.Identity.Access;
 using ModularTemplate.Identity.Authorization;
 using ModularTemplate.Identity.CurrentUser;
 using ModularTemplate.Identity.Contracts.Authorization;
@@ -11,6 +12,8 @@ public static class IdentityModuleConfiguration
     public static IServiceCollection AddIdentityApplicationServices(this IServiceCollection services)
     {
         services.AddScoped<ICurrentUserProvider, CurrentUserProvider>();
+        services.AddScoped<SynchronizeCurrentUserCommandHandler>();
+        services.AddScoped<GrantInitialAdminAccessCommandHandler>();
         services.AddScoped<IApplicationAccessAuthorizer, ApplicationAccessAuthorizer>();
 
         return services;

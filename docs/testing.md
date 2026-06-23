@@ -1,8 +1,7 @@
-# Release Test Plan
+# Archive Validation Plan
 
-Use this checklist after the current factory changes are committed. The goal is
-to prove the template payload works locally, the packed CLI bootstraps a clean
-product, and the published npm package works from a separate repository.
+Use this checklist to prove the archived template snapshot still bootstraps and
+verifies. It is not a release plan and does not include npm publication steps.
 
 ## 1. Confirm Factory Baseline
 
@@ -17,16 +16,12 @@ pnpm template:verify:full
 
 Expected:
 
-- `node -v` reports Node 24.15.0 or newer. This matters for `pnpm pack` and
-  `npm publish`, because package-manager commands check package `engines` and
-  `devEngines` with the ambient Node runtime that launched them.
+- `node -v` reports Node 24.15.0 or newer.
 - `pnpm exec node -v` reports Node 24.15.0 or newer.
-- `pnpm verify` passes, including root framework tests that protect template
-  infrastructure not intended to ship as generated-product tests.
-- `pnpm template:verify:full` passes against Docker or Podman.
-
-If `node -v` is not Node 24, activate Node 24 in the shell before release
-testing with your local version manager, then re-run the checks above.
+- `pnpm verify` passes, including root script checks and focused bootstrap
+  verification.
+- `pnpm template:verify:full` passes against Docker or Podman when full
+  generated-product validation is needed.
 
 For rootless Podman on Linux, set:
 
@@ -100,47 +95,12 @@ Expected:
 - Factory-only docs and packaging files are absent.
 - The generated product starts locally from Aspire.
 
-## 4. Publish And Test From npm
+## 4. Archive Decision
 
-Before publishing:
-
-- Create or sign into an npm account.
-- Confirm `dotnet-modular-react-template` is available.
-- Configure npm trusted publishing for the package and GitHub Actions workflow.
-  Use repository `oxface/dotnet-modular-react-template` and workflow
-  filename `release-please.yml` for automated releases. The manual retry
-  workflow uses `publish-npm.yml`.
-- Let Release Please create the release PR and set the first real version.
-
-After the Release Please workflow creates the GitHub release and publishes the
-npm package, test from a separate throwaway directory outside the factory repo:
-
-```sh
-mkdir -p /tmp/npm-template-consumer
-cd /tmp/npm-template-consumer
-
-pnpm dlx dotnet-modular-react-template -- --product-name "Published Desk" --output ./published-desk
-cd published-desk
-pnpm install --frozen-lockfile
-pnpm verify
-```
-
-Then start Aspire as in section 2.
-
-Expected:
-
-- `pnpm dlx dotnet-modular-react-template` resolves from npm.
-- The generated repository behaves the same as the local packed CLI output.
-- Verify, baseline migration application, Aspire startup, auth smoke, hooks,
-  and inherited CI files all work.
-
-## 5. Release Decision
-
-Ship v1 only after these pass:
+The snapshot is archive-ready when:
 
 - Factory verification passes.
-- Template payload runs locally from Aspire.
+- Template payload runs locally from Aspire when full smoke validation is
+  needed.
 - Local packed CLI creates a working product.
-- Published npm package creates a working product from a separate directory.
-- The baseline EF migrations are intentionally present in the factory payload
-  before release.
+- The baseline EF migrations are intentionally present in the factory payload.

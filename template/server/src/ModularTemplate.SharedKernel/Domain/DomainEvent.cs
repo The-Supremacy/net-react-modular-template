@@ -1,10 +1,5 @@
-using Bondstone.Domain;
+using Bondstone.DomainEvents;
 
 namespace ModularTemplate.SharedKernel.Domain;
 
-public abstract record DomainEvent : IDomainEvent
-{
-    public Guid EventId { get; init; } = Guid.NewGuid();
-
-    public DateTimeOffset OccurredAt { get; init; } = DateTimeOffset.UtcNow;
-}
+public abstract record DomainEvent : IDomainEvent;

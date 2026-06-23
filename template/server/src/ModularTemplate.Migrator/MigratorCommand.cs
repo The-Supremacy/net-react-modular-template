@@ -25,16 +25,6 @@ public sealed record MigratorCommand(
             return true;
         }
 
-        if (args is ["migrate", "transport"])
-        {
-            command = command with
-            {
-                MigrationScope = MigratorMigrationScope.Transport,
-                UseConfiguredInitialAdmin = false
-            };
-            return true;
-        }
-
         if (args is ["migrate", "modules"])
         {
             command = command with
@@ -64,7 +54,7 @@ public sealed record MigratorCommand(
 
         if (args is not ["identity", "grant-admin", ..])
         {
-            error = "Usage: migrator [migrate [transport|modules|module <name>]] | identity grant-admin --provider <issuer> --subject <subject> [--force]";
+            error = "Usage: migrator [migrate [modules|module <name>]] | identity grant-admin --provider <issuer> --subject <subject> [--force]";
             return false;
         }
 
@@ -139,7 +129,6 @@ public sealed record MigratorCommand(
 public enum MigratorMigrationScope
 {
     All,
-    Transport,
     Modules,
     Module
 }

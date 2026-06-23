@@ -17,19 +17,15 @@ public sealed class MigratorCommandTests
         command.UseConfiguredInitialAdmin.ShouldBeTrue();
     }
 
-    [Theory]
+    [Fact]
     [Trait("Category", "Unit")]
-    [InlineData("transport", MigratorMigrationScope.Transport)]
-    [InlineData("modules", MigratorMigrationScope.Modules)]
-    public void TryParse_WhenMigrateScopeIsProvided_ReturnsScopedMigration(
-        string scope,
-        MigratorMigrationScope expectedScope)
+    public void TryParse_WhenModulesMigrationScopeIsProvided_ReturnsScopedMigration()
     {
-        bool parsed = MigratorCommand.TryParse(["migrate", scope], out MigratorCommand command, out string? error);
+        bool parsed = MigratorCommand.TryParse(["migrate", "modules"], out MigratorCommand command, out string? error);
 
         parsed.ShouldBeTrue();
         error.ShouldBeNull();
-        command.MigrationScope.ShouldBe(expectedScope);
+        command.MigrationScope.ShouldBe(MigratorMigrationScope.Modules);
         command.InitialAdmin.ShouldBeNull();
         command.UseConfiguredInitialAdmin.ShouldBeFalse();
     }

@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bondstone\Bondstone.Transport.Rebus\Bondstone.Transport.Rebus.csproj" />
     <ProjectReference Include="..\ModularTemplate.ServiceDefaults\ModularTemplate.ServiceDefaults.csproj" />
     <ProjectReference Include="..\ModularTemplate.SharedKernel\ModularTemplate.SharedKernel.csproj" />
     <ProjectReference Include="..\modules\ModularTemplate.Identity\ModularTemplate.Identity.csproj" />
@@ -15,6 +14,10 @@
     <ProjectReference Include="..\modules\ModularTemplate.Products.Infrastructure\ModularTemplate.Products.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Bondstone" />
+    <PackageReference Include="Bondstone.Hosting" />
+    <PackageReference Include="Bondstone.Persistence.EntityFrameworkCore.Postgres" />
+    <PackageReference Include="Bondstone.Transport.Local" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">

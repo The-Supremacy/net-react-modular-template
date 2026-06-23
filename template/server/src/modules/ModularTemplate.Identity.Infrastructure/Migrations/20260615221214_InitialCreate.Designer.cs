@@ -2,22 +2,25 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using ModularTemplate.Products.Infrastructure.Persistence;
+using ModularTemplate.Identity.Infrastructure.Persistence;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace ModularTemplate.Products.Infrastructure.Migrations
+namespace ModularTemplate.Identity.Infrastructure.Migrations
 {
-    [DbContext(typeof(ProductsDbContext))]
-    partial class ProductsDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(IdentityDbContext))]
+    [Migration("20260615221214_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("products")
+                .HasDefaultSchema("identity")
                 .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -90,7 +93,7 @@ namespace ModularTemplate.Products.Infrastructure.Migrations
 
                     b.HasIndex("ModuleName", "DomainEventName");
 
-                    b.ToTable("domain_event_records", "products");
+                    b.ToTable("domain_event_records", "identity");
                 });
 
             modelBuilder.Entity("Bondstone.Persistence.EntityFrameworkCore.Inbox.InboxMessageEntity", b =>
@@ -122,7 +125,7 @@ namespace ModularTemplate.Products.Infrastructure.Migrations
 
                     b.HasIndex("ReceivedAtUtc");
 
-                    b.ToTable("inbox_messages", "products");
+                    b.ToTable("inbox_messages", "identity");
                 });
 
             modelBuilder.Entity("Bondstone.Persistence.EntityFrameworkCore.IncomingInbox.IncomingInboxMessageEntity", b =>
@@ -264,7 +267,7 @@ namespace ModularTemplate.Products.Infrastructure.Migrations
 
                     b.HasIndex("ReceiverModule", "Status", "NextAttemptAtUtc", "IngestedAtUtc");
 
-                    b.ToTable("incoming_inbox_messages", "products");
+                    b.ToTable("incoming_inbox_messages", "identity");
                 });
 
             modelBuilder.Entity("Bondstone.Persistence.EntityFrameworkCore.Operations.OperationStateEntity", b =>
@@ -306,7 +309,7 @@ namespace ModularTemplate.Products.Infrastructure.Migrations
 
                     b.HasIndex("UpdatedAtUtc");
 
-                    b.ToTable("operation_states", "products");
+                    b.ToTable("operation_states", "identity");
                 });
 
             modelBuilder.Entity("Bondstone.Persistence.EntityFrameworkCore.Outbox.OutboxMessageEntity", b =>
@@ -430,33 +433,72 @@ namespace ModularTemplate.Products.Infrastructure.Migrations
 
                     b.HasIndex("Status", "NextAttemptAtUtc", "StoredAtUtc");
 
-                    b.ToTable("outbox_messages", "products");
+                    b.ToTable("outbox_messages", "identity");
                 });
 
-            modelBuilder.Entity("ModularTemplate.Products.Products.Product", b =>
+            modelBuilder.Entity("ModularTemplate.Identity.Access.ApplicationAccess", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Name")
+                    b.Property<DateTimeOffset?>("DisabledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("LocalUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocalUserId")
+                        .IsUnique();
+
+                    b.ToTable("application_access", "identity");
+                });
+
+            modelBuilder.Entity("ModularTemplate.Identity.Users.LocalUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)")
+                        .HasColumnName("email");
+
+                    b.Property<DateTimeOffset>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("Subject")
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAtUtc");
+                    b.HasIndex("Provider", "Subject")
+                        .IsUnique();
 
-                    b.HasIndex("Name");
-
-                    b.ToTable("products", "products");
+                    b.ToTable("local_users", "identity");
                 });
 #pragma warning restore 612, 618
         }

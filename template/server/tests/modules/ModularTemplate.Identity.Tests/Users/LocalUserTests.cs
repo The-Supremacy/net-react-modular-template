@@ -16,7 +16,7 @@ public sealed class LocalUserTests
         user.Subject.ShouldBe("subject-1");
         user.DisplayName.ShouldBe("Ada");
         user.Email!.Value.ShouldBe("ada@example.test");
-        user.DomainEvents.Single().ShouldBeOfType<LocalUserCreatedDomainEvent>();
+        user.PendingDomainEvents.Single().ShouldBeOfType<LocalUserCreatedDomainEvent>();
     }
 
     [Theory]
@@ -36,12 +36,12 @@ public sealed class LocalUserTests
     public void MarkSeen_WhenUserIsSeen_RecordsSeenEvent()
     {
         LocalUser user = LocalUser.Create("oidc", "subject-1", "Ada", "ada@example.test");
-        user.ClearDomainEvents();
+        user.ClearPendingDomainEvents();
 
         user.MarkSeen(" Ada Lovelace ", "ada.lovelace@example.test");
 
         user.DisplayName.ShouldBe("Ada Lovelace");
         user.Email!.Value.ShouldBe("ada.lovelace@example.test");
-        user.DomainEvents.Single().ShouldBeOfType<LocalUserSeenDomainEvent>();
+        user.PendingDomainEvents.Single().ShouldBeOfType<LocalUserSeenDomainEvent>();
     }
 }

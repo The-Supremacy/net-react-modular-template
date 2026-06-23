@@ -13,7 +13,7 @@ public sealed class ProductTests
         Product product = Product.Create("Document Library");
 
         product.Name.ShouldBe("Document Library");
-        product.DomainEvents.Single().ShouldBeOfType<ProductCreatedDomainEvent>();
+        product.PendingDomainEvents.Single().ShouldBeOfType<ProductCreatedDomainEvent>();
     }
 
     [Fact]

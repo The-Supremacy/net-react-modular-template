@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <ProjectReference Include="..\..\Bondstone\Bondstone.EntityFrameworkCore.Postgres\Bondstone.EntityFrameworkCore.Postgres.csproj" />
     <ProjectReference Include="..\ModularTemplate.Identity\ModularTemplate.Identity.csproj" />
     <ProjectReference Include="..\ModularTemplate.Identity.Contracts\ModularTemplate.Identity.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Bondstone.Persistence.EntityFrameworkCore" />
+    <PackageReference Include="Bondstone.Persistence.EntityFrameworkCore.Postgres" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />

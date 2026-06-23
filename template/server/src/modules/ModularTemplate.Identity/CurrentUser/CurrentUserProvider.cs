@@ -1,17 +1,16 @@
-using Bondstone.Commands;
 using ModularTemplate.Identity.Contracts.CurrentUser;
 
 namespace ModularTemplate.Identity.CurrentUser;
 
 public sealed class CurrentUserProvider(
-    IModuleCommandExecutor<SynchronizeCurrentUserCommand, CurrentUserContext> commandExecutor)
+    SynchronizeCurrentUserCommandHandler handler)
     : ICurrentUserProvider
 {
     public async Task<CurrentUserContext> GetCurrentUserAsync(
         AuthenticatedIdentity? identity,
         CancellationToken cancellationToken)
     {
-        return await commandExecutor.SendAsync(
+        return await handler.HandleAsync(
             new SynchronizeCurrentUserCommand(identity),
             cancellationToken);
     }

@@ -10,6 +10,7 @@
     <PackageReference Include="Aspire.Hosting.Keycloak" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" />
     <PackageReference Include="Aspire.Hosting.Redis" />
+    <PackageReference Include="MessagePack" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\server\src\ModularTemplate.Host\ModularTemplate.Host.csproj" IsAspireProjectResource="true" />

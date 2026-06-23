@@ -1,4 +1,4 @@
-using Bondstone.Commands;
+using ModularTemplate.Identity;
 using ModularTemplate.Identity.Access;
 using ModularTemplate.Identity.Contracts.CurrentUser;
 using ModularTemplate.Identity.Users;
@@ -6,14 +6,14 @@ using ModularTemplate.Identity.Users;
 namespace ModularTemplate.Identity.CurrentUser;
 
 public sealed record SynchronizeCurrentUserCommand(
-    AuthenticatedIdentity? Identity) : IModuleCommand<CurrentUserContext>;
+    AuthenticatedIdentity? Identity);
 
 public sealed class SynchronizeCurrentUserCommandHandler(
+    IIdentityUnitOfWork unitOfWork,
     ILocalUserRepository localUserRepository,
     IApplicationAccessRepository applicationAccessRepository)
-    : IModuleCommandHandler<SynchronizeCurrentUserCommand, CurrentUserContext>
 {
-    public async ValueTask<CurrentUserContext> HandleAsync(
+    public async Task<CurrentUserContext> HandleAsync(
         SynchronizeCurrentUserCommand command,
         CancellationToken cancellationToken)
     {
@@ -43,6 +43,7 @@ public sealed class SynchronizeCurrentUserCommandHandler(
         }
 
         bool hasAccess = await applicationAccessRepository.HasActiveAccessAsync(localUser.Id, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new CurrentUserContext(
             true,

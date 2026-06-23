@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using ModularTemplate.Host.Tests.Authentication;
+using ModularTemplate.Identity;
 using ModularTemplate.Identity.Access;
 using ModularTemplate.Identity.Users;
 
@@ -32,10 +33,12 @@ public sealed class HostApplicationFactory(
 
             services.RemoveAll<ILocalUserRepository>();
             services.RemoveAll<IApplicationAccessRepository>();
+            services.RemoveAll<IIdentityUnitOfWork>();
             services.RemoveModuleCommandPipelineBehaviors();
             services.AddSingleton<HostTestIdentityContext>();
             services.AddSingleton<ILocalUserRepository>(services => services.GetRequiredService<HostTestIdentityContext>());
             services.AddSingleton<IApplicationAccessRepository>(services => services.GetRequiredService<HostTestIdentityContext>());
+            services.AddSingleton<IIdentityUnitOfWork>(services => services.GetRequiredService<HostTestIdentityContext>());
 
             configureServices?.Invoke(services);
         });
@@ -43,11 +46,17 @@ public sealed class HostApplicationFactory(
 }
 
 internal sealed class HostTestIdentityContext :
+    IIdentityUnitOfWork,
     ILocalUserRepository,
     IApplicationAccessRepository
 {
     private readonly List<ApplicationAccess> _accessRecords = [];
     private readonly List<LocalUser> _users = [];
+
+    public Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 
     public Task<LocalUser?> GetByProviderSubjectAsync(
         string provider,

@@ -13,7 +13,7 @@ public sealed class ApplicationAccessTests
         var access = ApplicationAccess.GrantTo(Guid.NewGuid());
 
         access.IsActive.ShouldBeTrue();
-        access.DomainEvents.Single().ShouldBeOfType<ApplicationAccessGrantedDomainEvent>();
+        access.PendingDomainEvents.Single().ShouldBeOfType<ApplicationAccessGrantedDomainEvent>();
     }
 
     [Fact]
@@ -21,13 +21,13 @@ public sealed class ApplicationAccessTests
     public void Revoke_WhenAccessIsActive_RecordsRevokedEvent()
     {
         var access = ApplicationAccess.GrantTo(Guid.NewGuid());
-        access.ClearDomainEvents();
+        access.ClearPendingDomainEvents();
 
         access.Revoke();
 
         access.IsActive.ShouldBeFalse();
         access.DisabledAt.ShouldNotBeNull();
-        access.DomainEvents.Single().ShouldBeOfType<ApplicationAccessRevokedDomainEvent>();
+        access.PendingDomainEvents.Single().ShouldBeOfType<ApplicationAccessRevokedDomainEvent>();
     }
 
     [Fact]
@@ -36,12 +36,12 @@ public sealed class ApplicationAccessTests
     {
         var access = ApplicationAccess.GrantTo(Guid.NewGuid());
         access.Revoke();
-        access.ClearDomainEvents();
+        access.ClearPendingDomainEvents();
 
         access.Grant();
 
         access.IsActive.ShouldBeTrue();
         access.DisabledAt.ShouldBeNull();
-        access.DomainEvents.Single().ShouldBeOfType<ApplicationAccessGrantedDomainEvent>();
+        access.PendingDomainEvents.Single().ShouldBeOfType<ApplicationAccessGrantedDomainEvent>();
     }
 }

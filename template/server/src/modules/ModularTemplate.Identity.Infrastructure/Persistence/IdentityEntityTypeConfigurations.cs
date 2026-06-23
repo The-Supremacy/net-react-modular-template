@@ -11,6 +11,7 @@ public sealed class LocalUserConfiguration : IEntityTypeConfiguration<LocalUser>
     {
         builder.ToTable("local_users", "identity");
         builder.HasKey(x => x.Id);
+        builder.Ignore(x => x.PendingDomainEvents);
         builder.Property(x => x.Provider).HasMaxLength(128).IsRequired();
         builder.Property(x => x.Subject).HasMaxLength(256).IsRequired();
         builder.Property(x => x.DisplayName).HasMaxLength(256);
@@ -31,6 +32,7 @@ public sealed class ApplicationAccessConfiguration
     {
         builder.ToTable("application_access", "identity");
         builder.HasKey(x => x.Id);
+        builder.Ignore(x => x.PendingDomainEvents);
         builder.Property(x => x.LocalUserId).IsRequired();
         builder.Property(x => x.IsActive).IsRequired();
         builder.HasIndex(x => x.LocalUserId).IsUnique();

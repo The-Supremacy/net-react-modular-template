@@ -37,7 +37,7 @@ async function withTempDir(callback) {
   }
 }
 
-async function packPublishedPayload(tempDir) {
+async function packArchivePayload(tempDir) {
   const { stdout } = await execFileAsync(
     "pnpm",
     ["pack", "--pack-destination", tempDir],
@@ -78,7 +78,7 @@ async function assertPackExcludesGeneratedArtifacts(tarballPath) {
   assert.deepEqual(forbiddenEntries, []);
 }
 
-test("packed CLI bootstraps a product from the published payload", async () => {
+test("packed CLI bootstraps a product from the archive payload", async () => {
   await withTempDir(async (tempDir) => {
     const generatedArtifactDir = path.join(
       repoRoot,
@@ -101,7 +101,7 @@ test("packed CLI bootstraps a product from the published payload", async () => {
     );
 
     try {
-      const tarballPath = await packPublishedPayload(tempDir);
+      const tarballPath = await packArchivePayload(tempDir);
       await assertPackExcludesGeneratedArtifacts(tarballPath);
       const outputRoot = path.join(tempDir, "package-desk");
 

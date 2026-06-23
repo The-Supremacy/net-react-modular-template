@@ -1,8 +1,8 @@
 # Server Current State
 
 The generated template ships a .NET modular-monolith backend using ASP.NET Core
-Minimal APIs, EF Core with PostgreSQL, Bondstone command handling, and explicit
-module boundaries.
+Minimal APIs, EF Core with PostgreSQL, package-based Bondstone durable
+messaging, and explicit module boundaries.
 
 The shipped backend includes:
 
@@ -11,14 +11,10 @@ The shipped backend includes:
   middleware, and application-access authorization policy wiring.
 - Module Infrastructure EF Core DbContexts with baseline `InitialCreate`
   migrations so generated products can create the first local schemas.
-- Bondstone platform libraries for module boundaries, messaging contracts,
-  module message registration, PostgreSQL persistence/outbox/inbox storage, and
-  Rebus transport dispatch through PostgreSQL or Azure Service Bus adapters.
-- The Host starts module outbox dispatcher workers once after composing modules;
-  Bondstone module persistence by itself only registers the module DbContext,
-  unit of work, inbox, and outbox plumbing.
-- Bondstone exposes module outbox maintenance hooks for product-owned
-  dead-letter replay and processed-row cleanup workflows.
+- Bondstone NuGet packages for module boundaries, messaging contracts,
+  PostgreSQL persistence/outbox/inbox storage, domain-event persistence, local
+  transport, and hosted outbox dispatch.
+- The Host starts the Bondstone durable outbox worker after composing modules.
 - `ModularTemplate.ServiceDefaults` for OpenTelemetry, service discovery,
   default HTTP resilience, and development health endpoints.
 - SharedKernel primitives for entity, aggregate root, value object,
@@ -29,8 +25,8 @@ The shipped backend includes:
   persistence, and `GET /api/products/{productId}`.
 - Host module registration delegated through a configuration extension rather
   than direct module wiring in `Program.cs`.
-- Command pipeline behaviors for diagnostics and request validation before
-  module unit-of-work handling.
+- Explicit application services for result-returning module work, with durable
+  messaging reserved for asynchronous handoff.
 
 Business modules are expected under `server/src/modules` when products add
 more behavior. Modules with persistence or external adapters should keep
